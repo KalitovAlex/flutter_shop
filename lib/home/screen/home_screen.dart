@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_shop/home/widgets/app_card.dart';
 import 'package:flutter_shop/home/widgets/concert_item.dart';
 import 'package:flutter_shop/home/widgets/featured_product.dart';
 import 'package:flutter_shop/home/widgets/merch_store_with_button.dart';
@@ -16,7 +15,6 @@ class HomeScreen extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(child: MerchStoreWithButton()),
           SliverToBoxAdapter(child: FeaturedProduct()),
-          SliverToBoxAdapter(child: AppCard()),
           SliverToBoxAdapter(child: ConcertItem()),
           SliverToBoxAdapter(child: ProductCategories()),
         ],
