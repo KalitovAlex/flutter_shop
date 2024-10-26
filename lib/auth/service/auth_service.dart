@@ -38,11 +38,23 @@ class AuthService {
   Future<void> clearAuth() async {
     if (_box == null || !_box!.isOpen) {
       debugPrint('Box is not initialized when clearing');
-      return;
+      await init();
     }
 
-    await _box!.clear();
-    debugPrint('Cleared auth data');
+    try {
+      // Удаляем конкретный ключ
+      await _box?.delete(_refreshTokenKey);
+      // Для надежности очищаем весь бокс
+      await _box?.clear();
+      debugPrint('Auth data cleared successfully');
+      
+      // Проверяем, что токен действительно удален
+      final checkToken = _box?.get(_refreshTokenKey);
+      debugPrint('Verification - Refresh token after clearing: $checkToken');
+    } catch (e) {
+      debugPrint('Error while clearing auth data: $e');
+      throw Exception('Ошибка при очистке данных авторизации');
+    }
   }
 
   bool get isInitialized => _box != null && _box!.isOpen;

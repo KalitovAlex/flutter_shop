@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_shop/auth/models/auth_model.dart';
 import 'package:flutter_shop/auth/service/auth_service.dart';
 import 'package:flutter_shop/core/storage/auth_storage.dart';
+import 'package:flutter_shop/core/api/dio_client.dart';
 
 class AuthRepository {
   final Dio _dio;
@@ -13,12 +13,7 @@ class AuthRepository {
   AuthRepository({AuthService? authService})
       : _authService = authService ?? AuthService(),
         _storage = AuthStorage(),
-        _dio = Dio(BaseOptions(
-          baseUrl: dotenv.env['API_URL']!,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        ));
+        _dio = DioClient.instance;
 
   Future<String?> signIn(AuthRequest request) async {
     try {
@@ -91,9 +86,14 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
-    await _authService.clearAuth();
-    _storage.accessToken = null;
-    _storage.currentUser = null;
+    try {
+      await _authService.clearAuth();
+      _storage.accessToken = null;
+      _storage.currentUser = null;
+    } catch (e) {
+      debugPrint('Error during logout: $e');
+      throw Exception('Ошибка при выходе из системы');
+    }
   }
 
   Future<String> signUp(

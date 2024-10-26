@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_shop/core/api/dio_client.dart';
 import '../models/concert_model.dart';
 
 class ConcertRepository {
-  final Dio _dio;
-
-  ConcertRepository(this._dio);
+  final Dio _dio = DioClient.instance;
 
   Future<List<ConcertModel>> getConcerts() async {
     try {
