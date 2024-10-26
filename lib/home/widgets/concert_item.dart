@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_shop/cart/service/cart_service.dart';
 import 'package:flutter_shop/core/router/router.dart';
 import '../components/product_card.dart';
 import '../bloc/concert_bloc.dart';
@@ -94,6 +95,16 @@ class ConcertItem extends StatelessWidget {
                   date: formattedDate,
                   showCartButton: title.contains('ПРЕДСТОЯЩИЕ'),
                   imageHeight: 200,
+                  onCartPress: title.contains('ПРЕДСТОЯЩИЕ')
+                      ? () {
+                          CartService().addItem(concert.uuid, 'concert').then((_) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Концерт добавлен в корзину')),
+                            );
+                          });
+                        }
+                      : null,
                 ),
               ),
             );

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_shop/cart/service/cart_service.dart';
 import 'package:flutter_shop/core/utils/image_utils.dart';
 import '../repository/product_repository.dart';
 import '../models/product_model.dart';
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/products_bloc.dart';
+import '../bloc/products_event.dart';
+import '../bloc/products_state.dart';
 
 class ProductsScreen extends StatefulWidget {
   final bool isCap;
@@ -22,13 +27,11 @@ class ProductsScreen extends StatefulWidget {
 }
 
 class _ProductsScreenState extends State<ProductsScreen> {
-  final ProductRepository _repository = ProductRepository();
-  late Future<List<Product>> _productsFuture;
+  late final ProductsBloc _productsBloc;
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
 
-  // Add these fields
   final _searchSubject = BehaviorSubject<String>();
   final _minPriceSubject = BehaviorSubject<String>();
   final _maxPriceSubject = BehaviorSubject<String>();
@@ -37,12 +40,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   void initState() {
     super.initState();
+    _productsBloc = ProductsBloc(repository: ProductRepository());
     _setupSearchListeners();
     _loadProducts();
   }
 
   void _setupSearchListeners() {
-    // Combine all three streams
     CombineLatestStream.combine3(
       _searchSubject.debounceTime(const Duration(milliseconds: 500)),
       _minPriceSubject.debounceTime(const Duration(milliseconds: 500)),
@@ -78,15 +81,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   void _loadProducts({String? title, int? priceFrom, int? priceTo}) {
-    setState(() {
-      _productsFuture = _repository.getProducts(
-        isCap: widget.isCap,
-        isTShirt: widget.isTShirt,
-        title: title,
-        priceFrom: priceFrom,
-        priceTo: priceTo,
-      );
-    });
+    _productsBloc.add(ProductsEvent.loadProducts(
+      isCap: widget.isCap,
+      isTShirt: widget.isTShirt,
+      title: title,
+      priceFrom: priceFrom,
+      priceTo: priceTo,
+    ));
   }
 
   @override
@@ -183,35 +184,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ),
             ),
             Expanded(
-              child: FutureBuilder<List<Product>>(
-                future: _productsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-
-                  final products = snapshot.data!;
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio:
-                          0.7, // Adjusted aspect ratio for better card stretching
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return _buildProductCard(product);
-                    },
-                  );
-                },
-              ),
+              child: _buildProductsList(),
             ),
           ],
         ),
@@ -265,12 +238,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Товар добавлен в корзину')),
-                      );
+                      CartService().addItem(product.uuid, 'product').then((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Товар добавлен в корзину')),
+                        );
+                      });
                     },
-                    child: Center(child: Text('в корзину')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB71C1C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'В КОРЗИНУ',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -281,8 +264,47 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
+  Widget _buildProductsList() {
+    return BlocBuilder<ProductsBloc, ProductsState>(
+      bloc: _productsBloc,
+      builder: (context, state) {
+        return state.when(
+          initial: () => const SizedBox(),
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          loaded: (products) => GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.7,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) => _buildProductCard(products[index]),
+          ),
+          error: (message) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Ошибка: $message'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => _loadProducts(),
+                  child: const Text('Повторить'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
+    _productsBloc.close();
     _searchController.dispose();
     _minPriceController.dispose();
     _maxPriceController.dispose();

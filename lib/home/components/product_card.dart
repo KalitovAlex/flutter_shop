@@ -10,6 +10,7 @@ class ProductCard extends StatelessWidget {
   final double? imageHeight;
   final EdgeInsets? margin;
   final List<BoxShadow>? boxShadow;
+  final VoidCallback? onCartPress;
 
   const ProductCard({
     super.key,
@@ -21,6 +22,7 @@ class ProductCard extends StatelessWidget {
     this.imageHeight = 200,
     this.margin,
     this.boxShadow,
+    this.onCartPress,
   });
 
   @override
@@ -63,6 +65,8 @@ class ProductCard extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1, // Ограничение текста title на 1 строку
+                  overflow: TextOverflow.ellipsis, // Добавление многоточия
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -89,17 +93,20 @@ class ProductCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB71C1C),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.shopping_cart,
-                        color: Colors.white,
-                        size: 24,
+                  GestureDetector(
+                    onTap: onCartPress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB71C1C),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                     ),
                   ),

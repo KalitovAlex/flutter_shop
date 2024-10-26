@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_shop/core/api/dio_client.dart';
 import '../models/product_model.dart';
 
@@ -25,13 +26,26 @@ class ProductRepository {
       final List<dynamic> jsonList = response.data;
       return jsonList.map((json) => Product.fromJson(json)).toList();
     } on DioException catch (e) {
-      print('DioError: ${e.message}');
-      print('Response data: ${e.response?.data}');
-      print('Response status code: ${e.response?.statusCode}');
       throw Exception('Failed to load products: ${e.message}');
     } catch (e) {
-      print('Error: $e');
       throw Exception('Failed to load products: $e');
+    }
+  }
+
+  Future<List<Product>> getRecommendedProducts() async {
+    try {
+      final response = await DioClient.instance.get('/product/recommend');
+      debugPrint('Recommended products response: ${response.data}');
+
+      final products = (response.data as List)
+          .map((json) => Product.fromJson(json))
+          .toList();
+
+      debugPrint('Parsed ${products.length} recommended products');
+      return products;
+    } catch (e) {
+      debugPrint('Error fetching recommended products: $e');
+      rethrow;
     }
   }
 }

@@ -96,8 +96,10 @@ class AuthRepository {
     }
   }
 
-  Future<String> signUp(
-      {required String email, required String password}) async {
+  Future<String> signUp({
+    required String email,
+    required String password,
+  }) async {
     try {
       final response = await _dio.post(
         '/auth/signup',
@@ -106,9 +108,10 @@ class AuthRepository {
           'password': password,
         },
       );
+
       return response.data['accessToken'];
     } catch (e) {
-      throw Exception('Ошибка при регистрации');
+      throw Exception('Ошибка при регистрации: $e');
     }
   }
 }

@@ -28,7 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         listener: (context, state) {
           state.whenOrNull(
             success: (token) {
-              context.router.replace(const HomeRoute());
+              context.router.replace(const AuthRoute());
             },
             error: (message) {
               ScaffoldMessenger.of(context).showSnackBar(

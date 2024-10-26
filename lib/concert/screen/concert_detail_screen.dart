@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter_shop/core/router/routes.dart';
+import 'package:flutter_shop/cart/service/cart_service.dart';
 import '../../core/utils/image_utils.dart';
 import '../../home/models/concert_model.dart';
 
@@ -126,13 +126,14 @@ class ConcertDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        context.router.pushNamed(homeRoute);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Товар успешно добавлен в корзину'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        CartService().addItem(concert.uuid, 'concert').then((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Концерт добавлен в корзину'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,

@@ -8,6 +8,8 @@ import 'package:flutter_shop/home/widgets/product_categories.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/concert_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:badges/badges.dart' as badges;
+import 'package:flutter_shop/cart/service/cart_service.dart';
 
 @RoutePage()
 class HomeScreen extends StatefulWidget {
@@ -19,6 +21,27 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
+  final CartService _cartService = CartService();
+  int _cartItemsCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCart();
+    // Добавляем слушатель изменений корзины
+    _cartService.addListener(_updateCartCount);
+  }
+
+  Future<void> _initCart() async {
+    await _cartService.init();
+    _updateCartCount();
+  }
+
+  void _updateCartCount() {
+    setState(() {
+      _cartItemsCount = _cartService.getTotalCount();
+    });
+  }
 
   void scrollToCategories() {
     _scrollController.animateTo(
@@ -30,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _cartService.removeListener(_updateCartCount);
     _scrollController.dispose();
     super.dispose();
   }
@@ -51,14 +75,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.shopping_cart_outlined,
-              color: Colors.white,
+          badges.Badge(
+            position: badges.BadgePosition.topEnd(top: 0, end: 3),
+            showBadge: _cartItemsCount > 0,
+            badgeContent: Text(
+              _cartItemsCount.toString(),
+              style: const TextStyle(color: Colors.white),
             ),
-            onPressed: () {
-              context.router.pushNamed('/cart');
-            },
+            child: IconButton(
+              icon: const Icon(
+                Icons.shopping_cart_outlined,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                context.router.pushNamed('/cart');
+              },
+            ),
           ),
           IconButton(
             icon: const Icon(
