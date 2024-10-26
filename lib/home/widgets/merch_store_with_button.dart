@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 class MerchStoreWithButton extends StatelessWidget {
-  const MerchStoreWithButton({super.key});
+  final VoidCallback onPressed;
+  
+  const MerchStoreWithButton({
+    super.key,
+    required this.onPressed,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -22,27 +28,30 @@ class MerchStoreWithButton extends StatelessWidget {
                 height: 30.h,
               ),
             ),
-            Container(
-              width: 90.w,
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 2.h,
+            GestureDetector(
+              onTap: onPressed,
+              child: Container(
+                width: 90.w,
+                margin: EdgeInsets.symmetric(horizontal: 4.w),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
-                child: Text(
-                  'SHOP NOW',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 2.h,
+                  ),
+                  child: Text(
+                    'SHOP NOW',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
               ),
